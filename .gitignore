@@ -24,6 +24,9 @@ data/processed/
 data/raw/*
 !data/raw/.gitkeep
 
+# Ignore raw source artifacts outside data/
+Data Sources/
+
 # IDE
 .vscode/
 .idea/
