@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+.venv/
+.env
+.env.*
+
+# Node
+node_modules/
+.next/
+.next-cache/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data outputs
+backend/rag/vectorstore/
+data/processed/
+data/raw/*
+!data/raw/.gitkeep
+
+# IDE
+.vscode/
+.idea/
