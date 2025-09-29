@@ -27,3 +27,6 @@ data/raw/*
 # IDE
 .vscode/
 .idea/
+
+# Cursor workspace
+.cursor/
