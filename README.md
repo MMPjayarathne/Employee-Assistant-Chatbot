@@ -26,6 +26,8 @@ Endpoints:
 - POST `/ingest` (multipart file upload)
 - POST `/chat` ({ question })
 - GET `/analytics`
+- GET `/files` (list) and `/files/*` (serve)
+- POST `/forms/explain` (upload a PDF form, returns explanation)
 
 ### 3) Frontend (Next.js)
 ```bash
@@ -37,7 +39,22 @@ Open `http://localhost:3000`
 
 Set `NEXT_PUBLIC_API_BASE` env to point to backend if not default.
 
+## Azure OpenAI (Microsoft LLM)
+Set environment variables for synthesis:
+- `AZURE_OPENAI_ENDPOINT` = e.g. `https://YOUR-RESOURCE.openai.azure.com/`
+- `AZURE_OPENAI_KEY` = your Azure OpenAI API key
+- `AZURE_OPENAI_DEPLOYMENT` = your chat model deployment name (e.g., `gpt-4o-mini`, `gpt-4o`, etc.)
+- `AZURE_OPENAI_API_VERSION` = e.g., `2024-02-15-preview`
+
+If unset, the app falls back to extractive answers.
+
+## Features
+- RAG search (Chroma + Sentence-Transformers) with Azure OpenAI synthesis
+- Chat UI with citations, voice input (Web Speech API), dark/light theme
+- Upload docs, rebuild vector store, view existing docs with thumbnails
+- Forms assistant: upload a PDF to get a field-by-field explanation
+- Analytics of top questions
+
 ## Notes
-- The current RAG uses `sentence-transformers/all-MiniLM-L6-v2` + Chroma.
-- Add your LLM of choice for better synthesis.
-- For deployment, add Dockerfiles and a docker-compose file as needed.
+- Add Docker and CI as needed.
+- Consider authentication before production use.

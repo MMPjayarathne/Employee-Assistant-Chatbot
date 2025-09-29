@@ -10,9 +10,11 @@ import shutil
 try:
     from backend.rag.ingest import build_vectorstore  # type: ignore
     from backend.rag.query import RagQueryEngine  # type: ignore
+    from backend.config import load_azure_config  # type: ignore
 except ImportError:  # pragma: no cover
     from rag.ingest import build_vectorstore
     from rag.query import RagQueryEngine
+    from config import load_azure_config
 
 # Resolve paths relative to this file, not the CWD
 BACKEND_DIR = os.path.dirname(__file__)
@@ -92,6 +94,49 @@ async def ingest(files: List[UploadFile] = File(default_factory=list)) -> dict:
     build_vectorstore(processed_dir=DATA_PROCESSED_DIR, persist_dir=VECTORSTORE_DIR)
 
     return {"saved": saved_files, "vectorstore": VECTORSTORE_DIR}
+
+
+@app.post("/forms/explain")
+async def explain_form(file: UploadFile = File(...)) -> dict:
+    # extract text
+    try:
+        import pdfplumber
+        import io
+        content = await file.read()
+        with pdfplumber.open(io.BytesIO(content)) as pdf:
+            text = "\n".join([(p.extract_text() or "") for p in pdf.pages])
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to read PDF")
+
+    azure = load_azure_config()
+    explanation = ""
+    if azure.endpoint and azure.api_key and azure.deployment:
+        try:
+            from openai import AzureOpenAI
+            client = AzureOpenAI(
+                api_key=azure.api_key,
+                api_version=azure.api_version,
+                azure_endpoint=azure.endpoint,
+            )
+            prompt = (
+                "You are a forms assistant. Given the form text below, list each field and explain:\n"
+                "- What it means\n- What acceptable values look like\n- Any HR/EPF/ETF compliance notes\n\n" 
+                "Return a concise, numbered list.\n\nFORM TEXT:\n" + text
+            )
+            resp = client.chat.completions.create(
+                model=azure.deployment,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=800,
+            )
+            explanation = resp.choices[0].message.content or ""
+        except Exception:
+            explanation = ""
+
+    if not explanation:
+        explanation = (text[:1200] + "...") if len(text) > 1200 else text
+
+    return {"explanation": explanation}
 
 
 _query_engine: Optional[RagQueryEngine] = None

@@ -2,7 +2,7 @@ import os
 import glob
 from typing import List
 
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
 
@@ -30,7 +30,7 @@ def build_vectorstore(processed_dir: str, persist_dir: str, model_name: str = DE
     if not texts:
         return
 
-    embeddings = SentenceTransformerEmbeddings(model_name=model_name)
+    embeddings = HuggingFaceEmbeddings(model_name=model_name)
 
     documents: List[str] = []
     for txt in texts:

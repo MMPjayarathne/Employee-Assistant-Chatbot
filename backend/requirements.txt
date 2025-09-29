@@ -2,6 +2,7 @@ fastapi
 uvicorn
 langchain
 langchain-community
+langchain-huggingface
 chromadb
 sentence-transformers
 pydantic
@@ -11,3 +12,4 @@ pytesseract
 openai
 python-multipart
 PyMuPDF
+python-dotenv
