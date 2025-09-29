@@ -6,9 +6,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000'
 
 const VoiceControls = dynamic(() => import('../components/VoiceControls'), { ssr: false })
 
-type Message = { role: 'user' | 'assistant'; content: string; sources?: number[] }
+type Message = { role: 'user' | 'assistant'; content: string; citations?: { index: number; source_name?: string; raw_url?: string }[] }
 
-type ChatResponse = { answer: string; sources: { index: number; snippet: string }[] }
+type ChatResponse = { answer: string; sources: { index: number; snippet: string; source_name?: string; raw_url?: string }[] }
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -28,8 +28,8 @@ export default function Home() {
     setLoading(true)
     try {
       const { data } = await axios.post<ChatResponse>(`${API_BASE}/chat`, { question })
-      const citationIndices = (data.sources || []).map(s => s.index)
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.answer, sources: citationIndices }])
+      const citations = (data.sources || []).map(s => ({ index: s.index, source_name: s.source_name, raw_url: s.raw_url }))
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.answer, citations }])
     } catch (e: any) {
       const err = e?.response?.data?.detail || 'Error contacting backend'
       setMessages((prev) => [...prev, { role: 'assistant', content: err }])
@@ -38,13 +38,8 @@ export default function Home() {
     }
   }
 
-  function onTranscript(text: string) {
-    setInput(text)
-  }
-
-  function onSpeak(_text: string) {
-    // reserved for future advanced TTS control
-  }
+  function onTranscript(text: string) { setInput(text) }
+  function onSpeak(_text: string) {}
 
   return (
     <div className="px-4">
@@ -58,10 +53,22 @@ export default function Home() {
             <div key={i} className={`mb-3 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 dark:text-gray-100'} rounded px-3 py-2 max-w-[80%] whitespace-pre-wrap`}>
                 {m.content}
-                {m.role === 'assistant' && m.sources && m.sources.length > 0 && (
-                  <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">Sources: {m.sources.map((s, idx) => (
-                    <span key={idx} className="mr-1">[{s}]</span>
-                  ))}</div>
+                {m.role === 'assistant' && m.citations && m.citations.length > 0 && (
+                  <div className="mt-2 text-xs text-gray-700 dark:text-gray-300">
+                    <div className="font-medium mb-1">Sources</div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {m.citations.map((c, idx) => (
+                        <li key={idx}>
+                          <span className="mr-2">[{c.index}]</span>
+                          {c.source_name ? (
+                            <a className="text-blue-600 hover:underline" href={`${API_BASE}${c.raw_url}`} target="_blank" rel="noreferrer">{c.source_name}.pdf</a>
+                          ) : (
+                            <span className="text-gray-500">Unknown source</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>

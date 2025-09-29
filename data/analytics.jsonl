@@ -4,3 +4,6 @@
 {"type": "chat", "question": "What are the documents needed for the EPF registration", "top_k": 4}
 {"type": "chat", "question": "What is EPF?", "top_k": 4}
 {"type": "chat", "question": "What is ETF?", "top_k": 4}
+{"type": "chat", "question": "What is HR", "top_k": 4}
+{"type": "chat", "question": "What document needed for ETF registration?", "top_k": 4}
+{"type": "chat", "question": "What is ETF?", "top_k": 4}

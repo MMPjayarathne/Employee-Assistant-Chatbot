@@ -48,6 +48,8 @@ class RagQueryEngine:
             sources.append({
                 "index": idx + 1,
                 "snippet": d.page_content[:500],
+                "source_name": (d.metadata or {}).get("source_name"),
+                "raw_url": (d.metadata or {}).get("raw_url"),
                 "metadata": d.metadata,
             })
 
